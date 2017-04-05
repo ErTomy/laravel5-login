@@ -1,0 +1,10 @@
+ALTER TABLE `users` ADD `active` tinyint(1) default 1;
+
+CREATE TABLE `users_logins` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `ip` varchar(20) DEFAULT NULL,
+  `valid` tinyint(1) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
