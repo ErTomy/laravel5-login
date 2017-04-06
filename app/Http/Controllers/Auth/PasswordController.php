@@ -1,13 +1,13 @@
-<?php namespace App\Http\Controllers\Auth;
+<?php namespace Inmo\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
+use Inmo\Http\Controllers\Controller;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 
 
 use Illuminate\Http\Request;
-use App\User;
+use Inmo\User;
 use Mail;
 
 class PasswordController extends Controller {
@@ -49,17 +49,21 @@ class PasswordController extends Controller {
 	// sobreescribimos función comprueba email y manda recordatorio de contraseña
 	public function postEmail(Request $request)
 	{
-		$this->validate($request, ['email' => 'required|email']);
+		$this->validate($request, ['email' => 'required|email'], [
+			'email.required'=>trans('login.email_required'),
+			'email.email'=>trans('login.email_email')
+		]
+	);
 
 		$user = User::findEmail($request->input('email'))->first();
 		if($user)
 		{
 				$this->emailResetPassword($request, $user);
-				return redirect()->back()->with('status', trans('passwords.sent'));
+				return redirect()->back()->with('status', true);
 		}
 		else
 		{
-				return redirect()->back()->withErrors(['email' => trans('passwords.user')]);
+				return redirect()->back()->withErrors(['email' => trans('login.wrong_user')]);
 		}
 	}
 
@@ -67,34 +71,38 @@ class PasswordController extends Controller {
 	// sobreescribimos función recupera contraseña para que tambien active el usuario
 	public function postReset(Request $request)
 	{
-			$this->validate($request, [
-				'token' => 'required',
-				'email' => 'required|email',
-				'password' => 'required|confirmed',
-			]);
+		$this->validate($request, [
+			'token' => 'required',
+			'email' => 'required|email',
+			'password' => 'required|confirmed',
+		],[
+			'email.required'=>trans('login.email_required'),
+			'email.email'=>trans('login.email_email'),
+			'password.required' => trans('login.password_required'),
+			'password.confirmed' => trans('login.password_confirmed')
+		]);
 
-			$credentials = $request->only(
-				'email', 'password', 'password_confirmation', 'token'
-			);
+		$credentials = $request->only(
+			'email', 'password', 'password_confirmation', 'token'
+		);
 
-			$response = $this->passwords->reset($credentials, function($user, $password)
-			{
-				$user->password = $password;
-				$user->active = 1;
-				$user->save();
-				$this->auth->login($user);
-			});
+		$response = $this->passwords->reset($credentials, function($user, $password)
+		{
+			$user->password = $password;
+			$user->active = 1;
+			$user->save();
+			$this->auth->login($user);
+		});
 
-			if ($response == PasswordBroker::PASSWORD_RESET)
-			{
-					return redirect($this->redirectPath());
-			}
-			else
-			{
-					return redirect()->back()
-								->withInput($request->only('email'))
-								->withErrors(['email' => trans($response)]);
-			}
+		switch ($response)
+		{
+			case PasswordBroker::PASSWORD_RESET:
+				return redirect($this->redirectPath());
+			default:
+				return redirect()->back()
+							->withInput($request->only('email'))
+							->withErrors(['email' => trans($response)]);
+		}
 
 	}
 

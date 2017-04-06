@@ -1,12 +1,12 @@
-<?php namespace App\Http\Controllers\Auth;
+<?php namespace Inmo\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
+use Inmo\Http\Controllers\Controller;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\Registrar;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 
 use Illuminate\Http\Request;
-use App\Login;
+use Inmo\Login;
 use Mail;
 
 
@@ -49,27 +49,32 @@ class AuthController extends Controller {
 	public function postLogin(Request $request)
 	{
 			$this->validate($request, [
-				'email' => 'required|email', 'password' => 'required',
+				'email' => 'required|email',
+				'password' => 'required',
+			], [
+				'email.required'=>trans('login.email_required'),
+				'email.email'=>trans('login.email_email'),
+				'password.required' => trans('login.password_required'),
 			]);
 			$credentials = $request->only('email', 'password');
 
 			$login = new Login($request->input('email'));
 			if($login->user)
-			{	// el usuario existe
+			{
 				if($login->user->active == 0)
-				{		// el usuario no esta activo
+				{
 						$error = trans('login.locked');
 						$this->emailLockedUser($request, $login);
 				}
 				elseif($login->check() === false)
-				{		// el usuario ha intentado logarse más de X veces en el tiempo establecido, bloqueamos la cuenta y mandamos email de aviso para reactivar
+				{
 						$login->user->active = 0;
 						$login->user->save();
 						$error = trans('login.lock_user', ['attemps'=>$login->max_attempts]);
 						$this->emailFailLogin($request, $login);
 				}
 				else if ($this->auth->attempt($credentials, $request->has('remember')))
-				{  // usuario logado correctamente
+				{
 						$login->user_id = $login->user->id;
 						$login->valid = 1;
 						$login->ip = $request->getClientIp();
@@ -77,7 +82,7 @@ class AuthController extends Controller {
 						return redirect()->intended($this->redirectPath());
 				}
 				else
-				{		// contraseña no valida para el usuario, marcamos el intento fallido y mandamos email al usuario avisando
+				{
 						$login->user_id = $login->user->id;
 						$login->valid = 0;
 						$login->ip = $request->getClientIp();
@@ -87,7 +92,7 @@ class AuthController extends Controller {
 				}
       }
 			else
-			{		// no existe el usuario
+			{
 					$error = trans('login.wrong_user');
 			}
 

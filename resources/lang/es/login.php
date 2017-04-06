@@ -9,22 +9,20 @@ return [
     |
     */
 
+    'email_required' => 'Introduzca el usuario',
+    'email_email' => 'Email no válido',
+    'password_required' => 'Introduzca la contraseña',
+    'password_confirmed' => 'No coincide la contraseña y la confirmación',
 
-
-
-    /* mensajes de error mostrados al logarse */
     'locked' => 'El usuario esta bloqueado.',
     'lock_user' => 'Ha introducido :attemps veces la contraseña incorrecta, el usuario ha sido bloqueado. Le hemos mandado un email para reactivar la cuenta.',
-    'wrong_password' => 'Usuario no válido, le quedan :attemps intentos',
+    'wrong_password' => 'Contraseña no válida, le quedan :attemps intentos',
     'wrong_user' => 'No existe el usuario',
 
-    /* parametros de los emails que se envian */
     'subject'=>'Intento de acceso no permitido',
     'subject_reset'=>'Recordatorio de contraseña',
-    'from'=>'info@email.com',
-    'from_name'=>'From del email',
-
-
+    'from'=>'info@viviendasmg.com',
+    'from_name'=>'Viviendas MG',
 
 
 
